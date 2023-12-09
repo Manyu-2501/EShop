@@ -1,1 +1,40 @@
 .env
+# Python
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+
+# Django
+db.sqlite3
+*.log
+*.pot
+*.pyc
+__pycache__/
+local_settings.py
+
+# VSCode
+.vscode/
+
+# Virtual Environment
+venv/
+venv3/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Development
+*.pyc
+*.sqlite3
+*.db
+*.log
+*.pyo
+*.pyc
+*.pyd
+__pycache__/
+local_settings.py
+
+# Other
+.DS_Store
+Thumbs.db
