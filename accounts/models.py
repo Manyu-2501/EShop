@@ -13,13 +13,27 @@ class Cart(BaseModel):
     user = models.ForeignKey(User, related_name='carts', on_delete=models.CASCADE)
     is_paid = models.BooleanField(default=False)
 
+    def get_cart_price(self):
+        items = self.cart_items.all()
+        price = 0
+        for item in items:
+            price += item.get_price()
+        return price
+
 class CartItem(BaseModel):
-    cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
-    product = models.OneToOneField(Product, on_delete=models.CASCADE)
-    size = models.ForeignKey(SizeVariant, on_delete=models.CASCADE)
-    color = models.ForeignKey(ColorVariant, on_delete=models.CASCADE)
+    cart = models.ForeignKey(Cart, related_name='cart_items', on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    size = models.ForeignKey(SizeVariant, on_delete=models.CASCADE, null = True, blank=True)
+    color = models.ForeignKey(ColorVariant, on_delete=models.CASCADE, null = True, blank=True)
     quantity = models.IntegerField(default=1)
-    price = models.IntegerField()
+
+    def get_price(self):
+        price = [self.product.price]
+        if self.color:
+            price.append(self.color.price)
+        elif self.size:
+            price.append(self.size.price)
+        return sum(price)
 
 class Profile(BaseModel):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name = 'profile')

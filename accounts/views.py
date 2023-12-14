@@ -91,21 +91,32 @@ def reset_password(request):
 
 def add_to_cart(request, uuid):
     user = request.user
-    print(type(user))
     product = Product.objects.get(uuid=uuid)
     cart,_ = Cart.objects.get_or_create(user=user, is_paid=False)
-    item = CartItem.objects.create(cart=cart, product=product, price=product.price)
+    item = CartItem.objects.create(cart=cart, product=product)
     if request.GET.get("size"):
         size = request.GET.get("size")
         size = SizeVariant.objects.get(size = size, product = product)
         item.size = size 
-        item.price += size.price
         item.save()
-    return HttpResponseRedirect(request.path_info)
+    return redirect("index")
 
 
 def cart(request):
-    return render(request, "accounts/cart.html")
+    context = {
+        "cart_items" : CartItem.objects.filter(cart__user=request.user, cart__is_paid=False).all()
+    }
+    return render(request, "accounts/cart.html", context)
+
+def remove_cart_item(request, uuid):
+    try:
+        cart_item = CartItem.objects.get(uuid=uuid)
+        cart_item.delete()
+    except Exception as e:
+        print(e)
+    return redirect("cart")
+    
+    return render(request, "cart")
 
 def logout_page(request):
     logout(request)
