@@ -1,11 +1,17 @@
-from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
-from .models import Profile, Cart, CartItem
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect, HttpResponse
-from products.models import Product, SizeVariant
-from home.views import index
+from django.shortcuts import render, redirect
+from .models import Profile, Cart, CartItem
+from products.models import Product, SizeVariant, Coupon
+from django.conf import settings
+from base.emails import send_password_reset_mail
+from base.helper import send_invoice_mail
+import hmac
+import hashlib
+import razorpay
 
 
 def login_page(request):
@@ -84,11 +90,13 @@ def reset_password(request):
         if not password == confirm_password:
             messages.warning(request, "Password does not match")
             return HttpResponseRedirect(request.path_info)
+        send_password_reset_mail(user.username)
         user.set_password(password)
         user.save()
         messages.success(request, "Password changed succesfully")
     return render(request, "accounts/reset_password.html")
 
+@login_required
 def add_to_cart(request, uuid):
     user = request.user
     product = Product.objects.get(uuid=uuid)
@@ -101,13 +109,75 @@ def add_to_cart(request, uuid):
         item.save()
     return redirect("index")
 
-
+@login_required
 def cart(request):
-    context = {
-        "cart_items" : CartItem.objects.filter(cart__user=request.user, cart__is_paid=False).all()
-    }
+    cart = None
+    payment = None
+    try:
+        cart = Cart.objects.get(user = request.user, is_paid=False)
+    except Exception as e:
+        print(e)    
+    
+    if cart:
+
+        if request.method == "POST":
+            coupon_code = request.POST.get("coupon_code")
+            coupon = Coupon.objects.filter(coupon_code = coupon_code, is_expired=False)
+            if not coupon.exists():
+                messages.warning(request, "Coupon does not exist or it has expired")
+                return redirect("cart")
+            
+            if cart.coupon:
+                messages.warning(request, "Coupon already applied")
+                return redirect("cart")
+            
+            if cart.get_cart_price() < coupon.last().minimum_amount:
+                messages.warning(request, f'Minimum amount of cart should be {coupon.last().minimum_amount}')
+                return redirect("cart")
+            
+            cart.coupon = coupon.last()
+            cart.save()
+            messages.success(request, f'Coupon Applied: {coupon_code}')
+    
+        client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+        client.set_app_details({"title" : "EShop", "version" : "1.0"})
+        data = { "amount": cart.get_final_amount()*100, "currency": "INR", "receipt": "order_rcptid_11" }
+        payment = client.order.create(data=data)
+
+        cart.razorpay_order_id = payment["id"]
+    
+    context = {"cart" : cart, "payment": payment}
+    
     return render(request, "accounts/cart.html", context)
 
+def payment_success(request):
+    
+    cart = Cart.objects.get(user = request.user, is_paid=False)
+    razorpay_payment_signature = request.GET.get("razorpay_signature")
+    razorpay_payment_id = request.GET.get("razorpay_payment_id")
+    razorpay_order_id = cart.razorpay_order_id
+    print("***** REACHED ******")
+    string_hmac = f'{razorpay_order_id}|{razorpay_payment_id}'
+    key=settings.RAZORPAY_KEY_SECRET
+    generated_signature = hmac.new(key.encode('utf-8') , string_hmac.encode('utf-8'), hashlib.sha256).hexdigest()
+    print(generated_signature)
+    print(razorpay_payment_signature)
+    if generated_signature == razorpay_payment_signature :
+        cart.razorpay_payment_id = razorpay_payment_id
+        cart.is_paid = True
+        cart.save()
+        print("done")
+        
+    return redirect("cart")
+    
+@login_required
+def remove_coupon(request):
+    cart = Cart.objects.get(user=request.user, is_paid=False)
+    cart.coupon = None
+    cart.save()
+    return redirect("cart")
+
+@login_required
 def remove_cart_item(request, uuid):
     try:
         cart_item = CartItem.objects.get(uuid=uuid)
@@ -115,9 +185,8 @@ def remove_cart_item(request, uuid):
     except Exception as e:
         print(e)
     return redirect("cart")
-    
-    return render(request, "cart")
 
+@login_required
 def logout_page(request):
     logout(request)
     return redirect("index")

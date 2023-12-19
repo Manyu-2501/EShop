@@ -9,5 +9,7 @@ urlpatterns = [
     path('add-to-cart/<uuid>/', add_to_cart, name='add_to_cart'),
     path('remove-cart-item/<uuid>', remove_cart_item, name='remove_cart_item'),
     path('reset-password/', reset_password, name='reset_password'),
+    path('remove-coupon/', remove_coupon, name='remove_coupon'),
+    path('success/', payment_success, name='payment_success'),
     path('logout/', logout_page, name='logout')
 ]

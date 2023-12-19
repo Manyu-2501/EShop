@@ -16,3 +16,8 @@ def get_product(request, product_slug):
     except Exception as e:
         print(e)
 
+# def get_category(request, category_class):
+
+
+
+

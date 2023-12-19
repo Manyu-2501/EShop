@@ -1,7 +1,7 @@
 from django.db import models
 from base.models import BaseModel
 from django.contrib.auth.models import User
-from products.models import Product, SizeVariant, ColorVariant
+from products.models import *
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from base.emails import send_account_activation_mail
@@ -12,6 +12,10 @@ import uuid
 class Cart(BaseModel):
     user = models.ForeignKey(User, related_name='carts', on_delete=models.CASCADE)
     is_paid = models.BooleanField(default=False)
+    coupon = models.ForeignKey(Coupon, related_name='cart', on_delete=models.SET_NULL, null=True, blank=True)
+    razorpay_order_id = models.CharField(max_length=50, null=True, blank=True)
+    razorpay_payment_id = models.CharField(max_length=50, null=True, blank=True)
+    razorpay_payment_signature = models.CharField(max_length=50, null=True, blank=True)
 
     def get_cart_price(self):
         items = self.cart_items.all()
@@ -19,6 +23,12 @@ class Cart(BaseModel):
         for item in items:
             price += item.get_price()
         return price
+    
+    def get_final_amount(self):
+        if self.coupon and self.coupon.minimum_amount < self.get_cart_price():
+            return self.get_cart_price() - self.coupon.discount_amount
+        return self.get_cart_price()
+
 
 class CartItem(BaseModel):
     cart = models.ForeignKey(Cart, related_name='cart_items', on_delete=models.CASCADE)
