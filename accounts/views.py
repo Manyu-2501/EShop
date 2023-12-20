@@ -145,6 +145,7 @@ def cart(request):
         payment = client.order.create(data=data)
 
         cart.razorpay_order_id = payment["id"]
+        cart.save()
     razorpay_key_id = settings.RAZORPAY_KEY_ID
     context = {"cart" : cart, "payment": payment, "razorpay_key": razorpay_key_id }
     
@@ -156,7 +157,6 @@ def payment_success(request):
     razorpay_payment_signature = request.GET.get("razorpay_signature")
     razorpay_payment_id = request.GET.get("razorpay_payment_id")
     razorpay_order_id = cart.razorpay_order_id
-    print("***** REACHED ******")
     string_hmac = f'{razorpay_order_id}|{razorpay_payment_id}'
     key=settings.RAZORPAY_KEY_SECRET
     generated_signature = hmac.new(key.encode('utf-8') , string_hmac.encode('utf-8'), hashlib.sha256).hexdigest()
@@ -167,7 +167,8 @@ def payment_success(request):
         cart.is_paid = True
         cart.save()
         print("done")
-        
+    else :
+        print("Signature didn't match")
     return redirect("cart")
     
 @login_required
@@ -190,3 +191,17 @@ def remove_cart_item(request, uuid):
 def logout_page(request):
     logout(request)
     return redirect("index")
+
+@login_required
+def buy_now(request, uuid):
+    user = request.user
+    product = Product.objects.get(uuid=uuid)
+    cart,_ = Cart.objects.get_or_create(user=user, is_paid=False)
+    item = CartItem.objects.create(cart=cart, product=product)
+    if request.GET.get("size"):
+        size = request.GET.get("size")
+        size = SizeVariant.objects.get(size = size, product = product)
+        item.size = size 
+        item.save()
+    return redirect("cart")
+    

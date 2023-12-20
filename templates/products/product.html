@@ -89,7 +89,7 @@
             {% endif %}
         </div> <!-- row.// -->
     
-        <a href="#" class="btn  btn-primary"> Buy now </a>
+        <a href="{% url 'buy_now' product.uuid %}?size={{selected_size}}&quantity=getQuantity()" class="btn  btn-primary"> Buy now </a>
         <a href="{% url 'add_to_cart' product.uuid %}?size={{selected_size}}&quantity=getQuantity()" class="btn  btn-outline-primary"> <span class="text">Add to cart</span> <i class="fas fa-shopping-cart"></i>  </a>
     </article> <!-- product-info-aside .// -->
             </main> <!-- col.// -->
