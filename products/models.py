@@ -5,7 +5,7 @@ from django.utils.text import slugify
 
 class Category(BaseModel):
     category_name = models.CharField(max_length=50)
-    category_image = models.ImageField(upload_to='categories')
+    category_image = models.ImageField(upload_to='categories', null=True, blank=True)
     category_slug = models.SlugField(unique=True, blank=True, null=True)
 
     def save(self, *args, **kwargs ):
@@ -35,8 +35,8 @@ class Product(BaseModel):
     price = models.IntegerField()
     description = models.TextField()
     product_slug = models.SlugField(unique=True, blank=True, null=True)
-    size_variant = models.ManyToManyField(SizeVariant)
-    color_variant = models.ManyToManyField(ColorVariant)
+    size_variant = models.ManyToManyField(SizeVariant, blank=True)
+    color_variant = models.ManyToManyField(ColorVariant, blank=True)
 
     def save(self, *args, **kwargs ):
         self.product_slug = slugify(self.product_name)

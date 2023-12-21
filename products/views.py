@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .models import Product
+from .models import *
 
 # Create your views here.
 def get_product(request, product_slug):
@@ -16,7 +16,17 @@ def get_product(request, product_slug):
     except Exception as e:
         print(e)
 
-# def get_category(request, category_class):
+def get_category(request, category_slug):
+    try:
+        category = Category.objects.get(category_slug=category_slug)
+        categories = Category.objects.all()
+        context = {"category":category, "categories":categories}
+
+        return render(request, "products/category.html", context)
+    except Exception as e:
+        print(e)
+
+
 
 
 

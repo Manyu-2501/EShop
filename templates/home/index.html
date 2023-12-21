@@ -6,11 +6,11 @@
     <div class="card-body d-flex">
         <div class="form-inline d-inline-flex mr-auto">
             <label>Category
-            <select class="ml-2 form-control">
-                <option>Clothes</option>
-                <option>Electronics</option>
-                <option>Home Items</option>
-                <option>Foods</option>
+            <select id="categoryDropdown" onchange="get_category()" class="ml-2 form-control">
+                <option value="Select">Select</option>
+                {% for category in categories %}
+                <option value="{{category.category_slug}}">{{category.category_name}}</option>
+                {% endfor %}
             </select>
         </label></div>
         <div class="btn-group" role="group" aria-label="Filter by">
@@ -38,4 +38,15 @@
     </div>
 
     </div>
+
+    <script>
+  
+            function get_category() {
+                var selectedCategory = document.getElementById("categoryDropdown").value;
+                if (selectedCategory !== "Select") {
+                    console.log(`selected : ${selectedCategory}`);
+                    window.location.href = `http://127.0.0.1:8000/products/categories/${selectedCategory}`;
+                }
+            }
+    </script>
 {% endblock %}
