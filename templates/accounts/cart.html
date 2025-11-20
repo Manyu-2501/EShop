@@ -1,4 +1,5 @@
 {% extends "base/base.html" %}
+{% load range_filter %}
 
 {% block start %}
 
@@ -26,22 +27,22 @@
                 <div class="aside"><img src="/media/{{item.product.product_images.first.image}}" class="img-sm"></div>
                 <figcaption class="info">
                     <a href="#" class="title text-dark">{{item.product.product_name}}</a>
-                    <p class="text-muted small">{% if item.size %}Size: {{item.size.size}},<br> {% endif %}{% if item.color %} Color: {{item.color}},<br>{% endif %}  Brand: Gucci</p>
+                    <p class="text-muted small">{% if item.size %}Size: {{item.size.size}},<br> {% endif %}{% if item.color %} Color: {{item.color}},<br>{% endif %}  </p>
                 </figcaption>
             </figure>
         </td>
         <td> 
-            <select class="form-control">
-                <option>1</option>
-                <option>2</option>	
-                <option>3</option>	
-                <option>4</option>	
+            <select  class="form-control" name="quantity" onchange="window.location.href=window.location.pathname + 'update-quantity/{{ item.uuid }}?quantity=' + this.value">
+                {% for i in item.product.stock|range_filter %}
+                    <option value="{{ i }}" {% if i == item.quantity %}selected{% endif %}>{{ i }}</option>
+                {% endfor %}
+
             </select> 
         </td>
         <td> 
             <div class="price-wrap"> 
                 <var class="price">Rs. {{item.get_price}}</var> 
-                <small class="text-muted">Rs. {{item.get_price}} each </small> 
+                {% comment %} <small class="text-muted">Rs. {{item.get_price}} each </small>  {% endcomment %}
             </div> <!-- price-wrap .// -->
         </td>
         <td class="text-right"> 
@@ -153,7 +154,7 @@ rzp1.on('payment.failed', function (response){
 document.getElementById('rzp-button1').onclick = function(e){
     rzp1.open();
     e.preventDefault();
-}
+} 
 </script>
     
 {% endblock %}

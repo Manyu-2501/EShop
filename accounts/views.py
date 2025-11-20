@@ -102,11 +102,13 @@ def add_to_cart(request, uuid):
     product = Product.objects.get(uuid=uuid)
     cart,_ = Cart.objects.get_or_create(user=user, is_paid=False)
     item = CartItem.objects.create(cart=cart, product=product)
+    quantity = request.GET.get("quantity") 
+    item.quantity = quantity
     if request.GET.get("size"):
         size = request.GET.get("size")
         size = SizeVariant.objects.get(size = size, product = product)
         item.size = size 
-        item.save()
+    item.save()
     return redirect("index")
 
 @login_required
@@ -204,4 +206,14 @@ def buy_now(request, uuid):
         item.size = size 
         item.save()
     return redirect("cart")
-    
+
+@login_required
+def update_quantity(request, uuid):
+    try:
+        cart_item = CartItem.objects.get(uuid=uuid)
+        quantity = request.GET.get("quantity")
+        cart_item.quantity = quantity
+        cart_item.save()
+    except Exception as e:
+        print(e)
+    return redirect("cart")    

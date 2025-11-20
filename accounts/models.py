@@ -41,8 +41,9 @@ class CartItem(BaseModel):
         price = [self.product.price]
         if self.color:
             price.append(self.color.price)
-        elif self.size:
+        if self.size:
             price.append(self.size.price)
+        price = [p * self.quantity for p in price]
         return sum(price)
 
 class Profile(BaseModel):
@@ -53,6 +54,16 @@ class Profile(BaseModel):
 
     def get_cart_count(self):
         return CartItem.objects.filter(cart__user=self.user, cart__is_paid=False).count()
+    
+class Wishlist(BaseModel):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='wishlist')
+    
+class WishlistItem(BaseModel):
+    wishlist = models.ForeignKey(Wishlist, related_name='wishlist_items', on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    size = models.ForeignKey(SizeVariant, on_delete=models.CASCADE, null = True, blank=True)
+    color = models.ForeignKey(ColorVariant, on_delete=models.CASCADE, null = True, blank=True)
+
 
 @receiver(post_save, sender=User)
 def _post_save_receiver(sender, instance, created, **kwargs):

@@ -89,8 +89,8 @@
             {% endif %}
         </div> <!-- row.// -->
     
-        <a href="{% url 'buy_now' product.uuid %}?size={{selected_size}}&quantity=getQuantity()" class="btn  btn-primary"> Buy now </a>
-        <a href="{% url 'add_to_cart' product.uuid %}?size={{selected_size}}&quantity=getQuantity()" class="btn  btn-outline-primary"> <span class="text">Add to cart</span> <i class="fas fa-shopping-cart"></i>  </a>
+        <a id = "buyNowBtn"  class="btn  btn-primary"> Buy now </a>
+        <a id = "addToCartBtn"  class="btn  btn-outline-primary"> <span class="text">Add to cart</span> <i class="fas fa-shopping-cart"></i>  </a>
     </article> <!-- product-info-aside .// -->
             </main> <!-- col.// -->
         </div> <!-- row.// -->
@@ -112,8 +112,11 @@
         }
 
       function quantityInc() {
+        if (quantity < {{ product.stock }}){
           quantity++;
           updateQuantity();
+        }
+
         }
 
       function quantityDec() {
@@ -125,5 +128,19 @@
       function getQuantity(){
         return quantity;
       }
+      document.getElementById('addToCartBtn').addEventListener('click', function() {
+        var size = "{{ selected_size }}";
+        var quantity = document.getElementById("quantity").value;
+        var url = "{% url 'add_to_cart' product.uuid %}?size=" + size + "&quantity=" + quantity;
+        window.location.href = url;
+      });
+
+      document.getElementById('buyNowBtn').addEventListener('click', function() {
+        var size = "{{ selected_size }}";
+        var quantity = document.getElementById("quantity").value;
+        var url = "{% url 'buy_now' product.uuid %}?size=" + size + "&quantity=" + quantity;
+        window.location.href = url;
+      });
+      
     </script>
 {% endblock %}

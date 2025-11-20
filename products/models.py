@@ -34,6 +34,7 @@ class Product(BaseModel):
     category = models.ForeignKey(Category, related_name='products', on_delete=models.CASCADE)
     price = models.IntegerField()
     description = models.TextField()
+    stock = models.IntegerField(default=0)
     product_slug = models.SlugField(unique=True, blank=True, null=True)
     size_variant = models.ManyToManyField(SizeVariant, blank=True)
     color_variant = models.ManyToManyField(ColorVariant, blank=True)

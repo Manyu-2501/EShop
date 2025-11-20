@@ -12,5 +12,6 @@ urlpatterns = [
     path('reset-password/', reset_password, name='reset_password'),
     path('remove-coupon/', remove_coupon, name='remove_coupon'),
     path('success/', payment_success, name='payment_success'),
-    path('logout/', logout_page, name='logout')
+    path('logout/', logout_page, name='logout'),
+    path('cart/update-quantity/<uuid>', update_quantity, name='update_quantity')
 ]
