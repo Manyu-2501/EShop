@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 import os
 from pathlib import Path
 from .env import *
+from django.conf import settings
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -27,6 +29,8 @@ SECRET_KEY = PROJECT_SECRET_KEY
 DEBUG = True
 
 ALLOWED_HOSTS = []
+
+BASE_URL = os.getenv('BASE_URL', 'http://127.0.0.1:8000/')
 
 
 # Application definition
@@ -68,6 +72,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'EShop.context_processors.base_url',
+
             ],
         },
     },

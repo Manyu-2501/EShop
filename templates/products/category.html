@@ -102,7 +102,7 @@
             var selectedCategory = document.getElementById("categoryDropdown").value;
             if (selectedCategory !== "Select") {
                 console.log(`selected : ${selectedCategory}`);
-                window.location.href = `http://127.0.0.1:8000/products/categories/${selectedCategory}`;
+                window.location.href = `{{BASE_URL}}products/categories/${selectedCategory}`;
             }
         }
     </script>

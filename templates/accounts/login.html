@@ -19,7 +19,7 @@
               </div> <!-- form-group// -->
               
               <div class="form-group">
-                  <a href="{% url 'reset_password' %}" class="float-right">Forgot password?</a> 
+                  <a href="{% url 'reset_password_request' %}" class="float-right">Forgot password?</a> 
                 <label class="float-left custom-control custom-checkbox"> <input type="checkbox" class="custom-control-input" checked=""> <div class="custom-control-label"> Remember </div> </label>
               </div> <!-- form-group form-check .// -->
               <div class="form-group">
@@ -29,7 +29,7 @@
           </div> <!-- card-body.// -->
         </div> <!-- card .// -->
     
-         <p class="text-center mt-4">Don't have account? <a href="http://127.0.0.1:8000/accounts/register/">Sign up</a></p>
+         <p class="text-center mt-4">Don't have account? <a href="{{BASE_URL}}accounts/register/">Sign up</a></p>
          <br><br>
     <!-- ============================ COMPONENT LOGIN  END.// ================================= -->
     

@@ -12,6 +12,7 @@ from base.helper import send_invoice_mail
 import hmac
 import hashlib
 import razorpay
+import uuid
 
 
 def login_page(request):
@@ -32,7 +33,7 @@ def login_page(request):
         user_obj = authenticate(username=email, password=password)
         if user_obj:
            login(request, user)
-           return redirect('http://127.0.0.1:8000/home/')
+           return redirect('index')
             
         messages.warning(request, "Password does not match the username")
         return HttpResponseRedirect(request.path_info)
@@ -76,25 +77,52 @@ def activate_account(request, email_token):
         print(e)
         return HttpResponse("Invalid token. Exception:", e)
     
-def reset_password(request):
+def reset_password(request, email_token):
     if request.method == "POST":
+        try:
+            user = Profile.objects.get(email_token=email_token).user
+        except Profile.DoesNotExist:
+            messages.error(request, "This password reset link is invalid or has expired.")
+            return redirect("reset_password_request")
+
         password = request.POST.get("password")
         confirm_password = request.POST.get("confirm_password")
-        username = request.POST.get("email")
-        user = User.objects.filter(username = username).last()
-        print(password)
-        if not user:
-            messages.warning(request, "User does not exist")
-            return HttpResponseRedirect(request.path_info)
-        
+
         if not password == confirm_password:
             messages.warning(request, "Password does not match")
             return HttpResponseRedirect(request.path_info)
-        send_password_reset_mail(user.username)
+
         user.set_password(password)
         user.save()
-        messages.success(request, "Password changed succesfully")
+
+        # Invalidate the token so the same link can't be reused
+        profile = user.profile
+        profile.email_token = str(uuid.uuid4())  # or None
+        profile.save()
+
+        messages.success(request, "Password changed successfully")
+        return redirect("login")
+
+    # GET: render the form (token is in URL)
     return render(request, "accounts/reset_password.html")
+
+def reset_password_request(request):
+    if request.method == "POST":
+        username = request.POST.get("email")
+        if username.strip() == "":
+            messages.warning(request, "Email field cannot be empty")
+            return HttpResponseRedirect(request.path_info)
+        user = User.objects.filter(username = username).last()
+        if not user:
+            messages.warning(request, "User does not exist")
+            return HttpResponseRedirect(request.path_info)
+        email_token = str(uuid.uuid4())
+        Profile.objects.filter(user = user).update(email_token = email_token)   
+
+        send_password_reset_mail(user.username, email_token)
+
+        messages.success(request, "Password reset link has been sent to your email")
+    return render(request, "accounts/reset_password_request.html")
 
 @login_required
 def add_to_cart(request, uuid):
@@ -200,6 +228,8 @@ def buy_now(request, uuid):
     product = Product.objects.get(uuid=uuid)
     cart,_ = Cart.objects.get_or_create(user=user, is_paid=False)
     item = CartItem.objects.create(cart=cart, product=product)
+    quantity = request.GET.get("quantity") 
+    item.quantity = quantity
     if request.GET.get("size"):
         size = request.GET.get("size")
         size = SizeVariant.objects.get(size = size, product = product)
