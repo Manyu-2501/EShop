@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: eshop
+    env: python
+    branch: develop
+    buildCommand: "bash build.sh"
+    startCommand: "gunicorn EShop.wsgi:application --bind 0.0.0.0:$PORT"
+    releaseCommand: "python manage.py migrate --noinput && python manage.py collectstatic --noinput"
+    autoDeploy: true
+    healthCheckPath: "/"
