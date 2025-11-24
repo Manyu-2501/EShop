@@ -1,0 +1,69 @@
+{% extends "base/base.html" %}
+
+{% block start %}
+<section class="section-content padding-y">
+    <div class="container">
+    <div class="row">
+        <main class="col-md-9">
+    <div class="card">
+    
+    <table class="table table-borderless table-shopping-cart">
+    <thead class="text-muted">
+    <tr class="small text-uppercase">
+      <th scope="col">Product</th>
+      <th scope="col" width="120">Price</th>
+      <th scope="col" class="text-right" width="200"> </th>
+    </tr>
+    </thead>
+    <tbody>
+    {% if wishlist and wishlist.wishlist_items.all %}
+        {% for item in wishlist.wishlist_items.all %}
+        <tr>
+            <td>
+                <figure class="itemside">
+                    <div class="aside"><img src="/media/{{ item.product.product_images.first.image }}" class="img-sm"></div>
+                    <figcaption class="info">
+                        <a href="{% url 'product_detail' item.product.product_slug %}" class="title text-dark">{{ item.product.product_name }}</a>
+                        <p class="text-muted small">{% if item.size %}Size: {{ item.size.size }},<br> {% endif %}{% if item.color %} Color: {{ item.color }},{% endif %}</p>
+                    </figcaption>
+                </figure>
+            </td>
+            <td>
+                <div class="price-wrap"> 
+                    <var class="price">Rs. {{ item.product.price }}</var>
+                </div>
+            </td>
+            <td class="text-right">
+                <a href="{% url 'add_to_cart' item.product.uuid %}?quantity=1{% if item.size %}&size={{ item.size.size }}{% endif %}" class="btn btn-primary">Add to cart</a>
+                <a href="{% url 'remove_wishlist_item' item.uuid %}" class="btn btn-light">Remove</a>
+            </td>
+        </tr>
+        {% endfor %}
+    {% else %}
+        <tr>
+            <td colspan="3" class="text-center">Your wishlist is empty.</td>
+        </tr>
+    {% endif %}
+
+    </tbody>
+    </table>
+    
+    <div class="card-body border-top">
+        <a href="{% url 'index' %}" class="btn btn-light"> <i class="fa fa-chevron-left"></i> Continue shopping </a>
+    </div>
+    </div> <!-- card.// -->
+        </main>
+    
+        <aside class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <p class="text-center mb-3">
+                        <img src="/media/images/misc/payments.png" height="26">
+                    </p>
+                </div>
+            </div>
+        </aside>
+    </div>
+    </div>
+</section>
+{% endblock %}
