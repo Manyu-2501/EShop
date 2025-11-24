@@ -29,7 +29,9 @@ SECRET_KEY = PROJECT_SECRET_KEY
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "eshopservice.onrender.com"
+]
 
 BASE_URL = os.getenv('BASE_URL', 'http://127.0.0.1:8000/')
 
