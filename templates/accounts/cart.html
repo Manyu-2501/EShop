@@ -46,7 +46,7 @@
             </div> <!-- price-wrap .// -->
         </td>
         <td class="text-right"> 
-        <a data-original-title="Save to Wishlist" title="" href="" class="btn btn-light" data-toggle="tooltip"> <i class="fa fa-heart"></i></a> 
+        <a data-original-title="Save to Wishlist" title="" href="{% url 'add_to_wishlist' item.product.uuid %}" class="btn btn-light" data-toggle="tooltip"> <i class="fa fa-heart"></i></a> 
         <a href="{% url 'remove_cart_item' item.uuid %}" class="btn btn-light"> Remove</a>
         </td>
     </tr>

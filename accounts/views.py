@@ -4,8 +4,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect
-from .models import Profile, Cart, CartItem
-from products.models import Product, SizeVariant, Coupon
+from .models import Profile, Cart, CartItem, Wishlist, WishlistItem
+from products.models import Product, SizeVariant, Coupon, ColorVariant
 from django.conf import settings
 from base.emails import send_password_reset_mail
 from base.helper import send_invoice_mail
@@ -236,6 +236,44 @@ def buy_now(request, uuid):
         item.size = size 
         item.save()
     return redirect("cart")
+
+@login_required
+def add_to_wishlist(request, uuid):
+    user = request.user
+    product = Product.objects.get(uuid=uuid)
+    wishlist,_ = Wishlist.objects.get_or_create(user=user)
+    item = WishlistItem.objects.create(wishlist=wishlist, product=product)
+    size = request.GET.get("size") 
+    if size:
+        size = SizeVariant.objects.get(size = size, product = product)
+        item.size = size 
+    color = request.GET.get("color") 
+    if color:
+        color = ColorVariant.objects.get(color = color, product = product)
+        item.color = color 
+    item.save()
+    return redirect("index")
+
+@login_required
+def wishlist(request):
+    wishlist = None
+    try:
+        wishlist = Wishlist.objects.get(user = request.user)
+    except Exception as e:
+        print(e)    
+    
+    context = {"wishlist" : wishlist}
+    
+    return render(request, "accounts/wishlist.html", context)
+
+@login_required
+def remove_wishlist_item(request, uuid):
+    try:
+        wishlist_item = WishlistItem.objects.get(uuid=uuid)
+        wishlist_item.delete()
+    except Exception as e:
+        print(e)
+    return redirect("wishlist")
 
 @login_required
 def update_quantity(request, uuid):
